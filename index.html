@@ -1,1594 +1,372 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Rezervasyon Sistemi</title>
-<style>
+  <meta charset="UTF-8">
+  <title>Umut Bird</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin:0;
-        padding:0;
+      background: linear-gradient(to bottom, #4ec0ca, #ffffff);
+      overflow: hidden; /* Oyun tam ekran gözüksün */
+      font-family: sans-serif;
     }
-    header {
-        background: #010d1a;
-        color: #fff;
-        padding: 20px;
-        text-align: center;
+    #gameContainer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #70c5ce;
     }
-    nav {
-        background: #ffffff; /* Arka plan rengi beyaz */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Gölge efekti */
+    /* Başlangıç ekranı */
+    #startScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 999;
     }
-
-    .nav-container {
-        max-width: 1200px; /* İçeriğin maksimum genişliği */
-        margin: 0 auto; /* Ortala */
-        padding: 0 16px; /* Sol ve sağ padding */
+    #startScreen button {
+      padding: 20px 40px;
+      font-size: 20px;
+      cursor: pointer;
+      background-color: #ffcc00;
+      border: none;
+      border-radius: 10px;
+      margin-top: 20px;
     }
-
-    .nav-buttons {
-        display: flex;
-        gap: 16px; /* Butonlar arası boşluk */
-        padding: 8px 0; /* Üst ve alt padding */
-        overflow-x: auto; /* Yatay kaydırma */
+    #gameCanvas {
+      display: block;
+      background: #70c5ce;
     }
-
-    /* Aktif buton stili */
-    .nav-buttons .btn.active {
-        background: #000000; /* Siyah arka plan */
-        color: #ffffff; /* Beyaz metin */
+    /* Oyun bitti ekranı */
+    #gameOverScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 1000;
+      text-align: center;
     }
-    nav button {
-        background: #ffffff; /* Beyaz arka plan */
-        color: #000000; /* Siyah metin */
-        font-size:16px;
-        padding:15px 20px;
-        cursor:pointer;
-    }
-    nav button:hover {
-        background:#d3d3d3; /* Açık gri */
-        color: #000000; /* Metin rengi siyah */
-    }
-    nav button:active {
-        background: #a9a9a9; /* Koyu gri */
-        color: #ffffff; /* Metin rengi beyaz */
-    }
-    .container {
-        margin:20px;
-        background:#fff;
-        padding:20px;
-        border-radius:5px;
-    }
-    .form-group {
-        margin-bottom:15px;
-        display:flex;
-        flex-direction: column;
-    }
-    .form-group label {
-        margin-bottom:5px;
-        font-weight:bold;
-    }
-    .form-group input, .form-group select, .form-group textarea {
-        background: none;
-        border: none;
-        border-bottom: 1px solid #ccc;
-        border-radius: 0;
-        padding: 5px;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        border-bottom-color: #27ae60;
-        outline: none;
-    }
-    .form-group textarea {
-        resize:none;
-        height:80px;
-    }
-    .btn {
-        background: #ffffff; /* Beyaz arka plan */
-        color: #000000; /* Siyah metin */
-        border: 1px solid #000000; /* Siyah kenarlık */
-        border:none;
-        padding:10px 15px;
-        border-radius:5px;
-        cursor:pointer;
-        margin-right:10px;
-        transition: background 0.3s ease, transform 0.3s ease; /* Hover ve aktif animasyonu */
-    }
-    .btn:hover {
-        background:#d3d3d3; /* Açık gri */
-        color: #000000; /* Metin rengi siyah */
-        transform: scale(1.03);
-    }
-    .btn:active {
-        background: #a9a9a9; /* Koyu gri */
-        color: #ffffff; /* Metin rengi beyaz */
-    }
-    h2, h3 {
-        margin-top:0;
-    }
-    .reservation-list {
-        list-style:none;
-        padding:0;
-    }
-    .reservation-list li {
-        background:#ecf0f1;
-        margin-bottom:10px;
-        padding:10px;
-        border-radius:5px;
-        cursor:pointer;
-    }
-    .details {
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-        background: #fafafa;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .detail-item {
-        display: flex;
-        align-items: flex-start; 
-        justify-content: flex-start; 
-        border-bottom: 1px solid #ddd;
-        padding: 6px 0;
-    }
-    .detail-item label {
-        margin-right: 10px;
-        flex-basis: 120px;
-        text-align: left;
-    }
-    .detail-item .copy-btn {
-        margin-left: auto;
-    }
-    .copy-btn {
-        background:#3498db;
-        color:#fff;
-        border:none;
-        padding:5px 10px;
-        border-radius:3px;
-        margin-left:10px;
-        cursor:pointer;
-    }
-    .copy-btn:hover {
-        background:#2980b9;
+    #gameOverScreen button {
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #ffcc00;
+      border: none;
+      border-radius: 10px;
     }
 
-    .tab-content {
-        display:none;
+    /* Ekranın en sağında yer alacak seymos.png için stil */
+    #seymosImg {
+      position: absolute;
+      top: 50px;
+      /* Sol/sağ konumu JavaScript ile güncellenecek */
+      width: 150px; 
+      display: none; /* Oyun başlayınca görünecek şekilde ayarlayacağız */
+      z-index: 10;   /* Canvas'ın üstünde görünebilmesi için */
     }
-
-    .search-box {
-        margin-bottom:15px;
-        display:flex;
-        align-items:center;
-    }
-    .search-box input {
-        flex:1;
-        padding:8px;
-        border:1px solid #ccc;
-        border-radius:5px;
-    }
-
-    .stop-list li {
-        background:#ecf0f1;
-        margin-bottom:10px;
-        padding:10px;
-        border-radius:5px;
-        display:flex;
-        justify-content: space-between;
-        align-items:center;
-    }
-
-    .stop-list button {
-        background:#e74c3c;
-        color:#fff;
-        border:none;
-        padding:5px 10px;
-        border-radius:3px;
-        cursor:pointer;
-    }
-
-    .stop-list button:hover {
-        background:#c0392b;
-    }
-
-    .date-green {
-        background: #d4edda !important; 
-    }
-    .date-red {
-        background: #f8d7da !important; 
-    }
-
-    .shift-note-list li {
-        background:#ecf0f1;
-        margin-bottom:10px;
-        padding:10px;
-        border-radius:5px;
-        display:flex;
-        justify-content: space-between;
-        align-items:center;
-    }
-    .shift-note-list button {
-        background:#e74c3c;
-        color:#fff;
-        border:none;
-        padding:5px 10px;
-        border-radius:3px;
-        cursor:pointer;
-    }
-    .shift-note-list button:hover {
-        background:#c0392b;
-    }
-
-    .modal-overlay {
-        position:fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background:rgba(0,0,0,0.5);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        z-index:1000;
-    }
-    .modal {
-        background:#fff;
-        padding:20px;
-        border-radius:5px;
-        max-width:300px;
-        width:100%;
-    }
-    .modal h3 {
-        margin-top:0;
-    }
-    .modal .roomtype-list {
-        margin-bottom:15px;
-        max-height:200px;
-        overflow:auto;
-    }
-    .modal-buttons {
-        display:flex;
-        justify-content:flex-end;
-    }
-    .modal-buttons .btn {
-        margin-left:10px;
-    }
-
-    .calc-options {
-        display:flex;
-        gap:10px;
-        margin-bottom:20px;
-    }
-
-    .calc-section {
-        margin-top:20px;
-        display:none;
-    }
-
-    .calc-result {
-        margin-top:10px;
-        background:#ecf0f1;
-        padding:10px;
-        border-radius:5px;
-    }
-
-    .sticky-note {
-        width: 200px;
-        min-height: 100px;
-        padding: 15px;
-        margin: 10px;
-        position: absolute;
-        cursor: move;
-        border-radius: 5px;
-        color: #000;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.16);
-        transition: transform 0.2s, box-shadow 0.2s;
-        user-select: none;
-    }
-    .sticky-note:hover {
-        box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-    }
-    .sticky-note.dragging {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-    .sticky-note .note-buttons {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        display: flex;
-        gap: 5px;
-    }
-    .sticky-note .close-btn,
-    .sticky-note .edit-btn {
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        padding: 2px 5px;
-        opacity: 0.6;
-        transition: opacity 0.3s;
-    }
-    .sticky-note .close-btn:hover,
-    .sticky-note .edit-btn:hover {
-        opacity: 1;
-    }
-    .sticky-note .note-content {
-        margin-top: 20px;
-        white-space: pre-wrap;
-    }
-    .sticky-note .note-content[contenteditable="true"] {
-        border: 1px dashed #666;
-        padding: 5px;
-        border-radius: 3px;
-        outline: none;
-    }
-
-    /* Tarih seçici daha minimal hale getirildi */
-    input[type="date"] {
-        padding: 2px 5px; /* Padding azaltıldı */
-        font-size: 12px; /* Font boyutu küçültüldü */
-        width: 120px; /* Genişlik sabitlendi */
-    }
-    /* Takvim ikonunu daha küçük yapma */
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        width: 14px;
-        height: 14px;
-    }
-
-    /* === BAĞLANTI (İPLİK) EKLENTİ KISMI === */
-    /* Notlar arasındaki iplik (çizgi) için arka planda bir SVG katmanı kullanacağız. */
-    #connectionsLayer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none; /* Fare etkileşimi SVG'yi engellemesin */
-        z-index: 500; /* Notlardan daha altta ya da üstte durmasını ayarlayabilirsiniz */
-    }
-    /* Çizgilerde basit bir animasyon efekti vermek için stroke-dasharray veya stroke-dashoffset kullanılabilir. */
-    line.note-connection {
-        stroke: #c90;
-        stroke-width: 2;
-        transition: stroke-dashoffset 0.5s; 
-        stroke-dasharray: 5; 
-        stroke-dashoffset: 0; 
-    }
-    line.note-connection:hover {
-        stroke: #f00;
-        stroke-width: 2.5;
-    }
-</style>
+  </style>
 </head>
 <body>
-<header>
-    <h1>Rezervasyon Sistemi</h1>
-</header>
-<nav>
-    <div class="nav-container">
-        <div class="nav-buttons">
-            <button class="btn active" data-tab="formTab">Yeni Rezervasyon</button>
-            <button class="btn" data-tab="pendingTab">Bekleyen Rezervasyonlar</button>
-            <button class="btn" data-tab="processedTab">Girilen Rezervasyonlar</button>
-            <button class="btn" data-tab="stopTab">Stop Ekle/Kaldır</button>
-            <button class="btn" data-tab="shiftTab">Shift Aktarımı</button>
-            <button class="btn" data-tab="calcTab">Hesaplama</button>
-        </div>
-    </div>
-</nav>
 
-<div class="container">
-    <!-- Yeni Rezervasyon Formu -->
-    <div class="tab-content" id="formTab">
-        <h2>Yeni Rezervasyon Formu</h2>
-        <div class="form-group">
-            <label for="location">Lokasyon Seçimi:</label>
-            <select id="location">
-                <option value="NG Enjoy">NG Enjoy</option>
-                <option value="NG Sapanca">NG Sapanca</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="guestName">Misafir İsmi:</label>
-            <input type="text" id="guestName" required />
-        </div>
-        <div class="form-group">
-            <label for="personCount">Kişi sayısı:</label>
-            <input type="text" id="personCount" placeholder="Kişi sayısı" />
-        </div>
-        <div class="form-group">
-            <label for="checkIn">Check-in Tarihi:</label>
-            <input type="date" id="checkIn" />
-        </div>
-        <div class="form-group">
-            <label for="checkOut">Check-out Tarihi:</label>
-            <input type="date" id="checkOut" />
-        </div>
-        <div class="form-group">
-            <label for="roomType">Oda Tipi:</label>
-            <select id="roomType"></select>
-        </div>
-        <div class="form-group">
-            <label for="phone">Telefon Numarası:</label>
-            <input type="text" id="phone" />
-        </div>
-        <div class="form-group">
-            <label for="email">Mail Adresi:</label>
-            <input type="email" id="email" />
-        </div>
-        <div class="form-group">
-            <label for="price">Fiyat:</label>
-            <input type="text" id="price" />
-        </div>
-        <div class="form-group">
-            <label for="discount">İndirim Oranı:</label>
-            <input type="text" id="discount" />
-        </div>
-        <div class="form-group">
-            <label for="notes">Özel Notlar:</label>
-            <textarea id="notes"></textarea>
-        </div>
-        <button class="btn" id="saveBtn">Kaydet</button>
-    </div>
+<div id="gameContainer">
+  <!-- Başlangıç Ekranı -->
+  <div id="startScreen">
+    <h1>Umut Bird</h1>
+    <button id="startBtn">Başla</button>
+  </div>
 
-    <!-- Bekleyen Rezervasyonlar -->
-    <div class="tab-content" id="pendingTab">
-        <h2>Bekleyen Rezervasyonlar</h2>
-        <ul class="reservation-list" id="pendingList"></ul>
-    </div>
+  <!-- Canvas -->
+  <canvas id="gameCanvas" width="480" height="640"></canvas>
 
-    <!-- Rezervasyon Detayları -->
-    <div class="tab-content" id="detailsTab">
-        <h2>Rezervasyon Detayı</h2>
-        <div class="details" id="detailsContent"></div>
-        <button class="btn" id="markAsProcessedBtn">Rezervasyon Girildi</button>
-        <button class="btn" id="backToPendingBtn">Geri</button>
-    </div>
+  <!-- Oyun Bitti Ekranı -->
+  <div id="gameOverScreen">
+    <h1 id="gameOverText">af yok oç umut</h1>
+    <button id="retryBtn">Tekrar Dene</button>
+  </div>
 
-    <!-- Girilen Rezervasyonlar -->
-    <div class="tab-content" id="processedTab">
-        <h2>Girilen Rezervasyonlar</h2>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Misafir ismi ara..." />
-        </div>
-        <ul class="reservation-list" id="processedList"></ul>
-    </div>
-
-    <!-- Stop Ekle/Kaldır -->
-    <div class="tab-content" id="stopTab">
-        <h2>Stop Ekle/Kaldır</h2>
-        <div class="form-group">
-            <label for="stopLocation">Lokasyon Seçimi:</label>
-            <select id="stopLocation">
-                <option value="NG Enjoy">NG Enjoy</option>
-                <option value="NG Sapanca">NG Sapanca</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Oda Tipleri (çoklu seçebilirsiniz):</label>
-            <div id="stopRoomTypeContainer"></div>
-        </div>
-        <div class="form-group">
-            <label for="stopStart">Stop Başlangıç Tarihi:</label>
-            <input type="date" id="stopStart" />
-        </div>
-        <div class="form-group">
-            <label for="stopEnd">Stop Bitiş Tarihi:</label>
-            <input type="date" id="stopEnd" />
-        </div>
-        <button class="btn" id="addStopBtn">Stop Ekle</button>
-
-        <h3>Aktif Stop Listesi</h3>
-        <ul class="stop-list" id="stopList"></ul>
-    </div>
-
-    <!-- Shift Aktarımı -->
-    <div class="tab-content" id="shiftTab">
-        <h2>Shift Aktarımı</h2>
-        <div class="form-group">
-            <label for="shiftNoteInput">Not Ekle:</label>
-            <textarea id="shiftNoteInput"></textarea>
-        </div>
-        <button class="btn" id="addShiftNoteBtn">Not Ekle</button>
-        
-        <!-- Notları ve bağlantı çizgilerini aynı container içinde tutmak için position: relative eklenebilir. -->
-        <div id="shiftNoteBoard" style="position: relative; min-height: 400px;">
-            <!-- Notların arkasına konulacak SVG katmanı: -->
-            <svg id="connectionsLayer"></svg>
-        </div>
-    </div>
-
-    <!-- Hesaplama Sekmesi -->
-    <div class="tab-content" id="calcTab">
-        <h2>Hesaplama</h2>
-        <div class="calc-options">
-            <button class="btn" id="bbCalcBtn">BB Hesaplama</button>
-            <button class="btn" id="discountCalcBtn">İndirim Hesaplama</button>
-            <button class="btn" id="agencyCalcBtn">Acenta Komisyon Hesaplama</button>
-            <button class="btn" id="applyDiscountCalcBtn">İndirim yap</button>
-        </div>
-
-        <!-- BB Hesaplama -->
-        <div class="calc-section" id="bbSection" style="display:none;">
-            <h3>BB Hesaplama</h3>
-            <div class="form-group">
-                <label for="bbPriceInput">Fiyat (ör: 10000 TL):</label>
-                <input type="number" id="bbPriceInput" />
-            </div>
-            <button class="btn" id="bbCalcStartBtn">Hesapla</button>
-            <div class="calc-result" id="bbResult"></div>
-        </div>
-
-        <!-- İndirim Hesaplama -->
-        <div class="calc-section" id="discountSection" style="display:none;">
-            <h3>İndirim Hesaplama</h3>
-            <div class="form-group">
-                <label for="originalPriceInput">Orijinal Fiyat (ör: 50000 TL):</label>
-                <input type="number" id="originalPriceInput" />
-            </div>
-            <div class="form-group">
-                <label for="targetPriceInput">Hedef Fiyat (ör: 35000 TL):</label>
-                <input type="number" id="targetPriceInput" />
-            </div>
-            <button class="btn" id="discountCalcStartBtn">Hesapla</button>
-            <div class="calc-result" id="discountResult"></div>
-        </div>
-
-        <!-- Acenta Komisyon Hesaplama -->
-        <div class="calc-section" id="agencySection" style="display:none;">
-            <h3>Acenta Komisyon Hesaplama</h3>
-            <div class="form-group">
-                <label for="agencyPriceInput">Fiyat (Örn: 330):</label>
-                <input type="number" id="agencyPriceInput" step="0.01"/>
-            </div>
-            <div class="form-group">
-                <label for="agencyCurrencySelect">Döviz Türü (TL veya EUR):</label>
-                <select id="agencyCurrencySelect">
-                    <option value="EUR">EUR</option>
-                    <option value="TL">TL</option>
-                </select>
-            </div>
-            <button class="btn" id="agencyCalcStartBtn">Hesapla</button>
-            <div class="calc-result" id="agencyResult"></div>
-        </div>
-
-        <!-- İndirim yap Hesaplama -->
-        <div class="calc-section" id="applyDiscountSection" style="display:none;">
-            <h3>İndirim Yap</h3>
-            <div class="form-group">
-                <label for="applyDiscountOriginalPrice">Orijinal Fiyat (ör: 16000 TL veya 16.000 TL):</label>
-                <input type="text" id="applyDiscountOriginalPrice" />
-            </div>
-            <div class="form-group">
-                <label for="applyDiscountPercentage">İndirim Oranı (%) (ör: 10):</label>
-                <input type="number" id="applyDiscountPercentage" step="0.01"/>
-            </div>
-            <button class="btn" id="applyDiscountBtn">Hesapla</button>
-            <div class="calc-result" id="applyDiscountResult"></div>
-        </div>
-    </div>
+  <!-- Ekranın sağındaki seymos.png -->
+  <img id="seymosImg" src="seymos.png" alt="Seymos Görseli">
 </div>
 
-<!-- Modal (Stop Kaldırma Seçimi) -->
-<div class="modal-overlay" id="modalOverlay" style="display:none;">
-    <div class="modal">
-        <h3>Hangi oda tiplerinin stopunu kaldırmak istiyorsunuz?</h3>
-        <div class="roomtype-list" id="modalRoomTypeList"></div>
-        <div class="modal-buttons">
-            <button class="btn" id="modalCancelBtn">İptal</button>
-            <button class="btn" id="modalRemoveBtn">Seçilenleri Kaldır</button>
-        </div>
-    </div>
-</div>
+<!-- SES DOSYALARI -->
+<audio id="jumpSound" src="esumut.mp3"></audio>
+<audio id="passSound1" src="lütfen.mp3"></audio>
+<audio id="passSound2" src="nolursun.mp3"></audio>
+<audio id="passSound3" src="seymos.mp3"></audio>
+<audio id="passSound4" src="yalvarırım.mp3"></audio>
+<!-- Kullanıcı yandığında çalınacak ses -->
+<audio id="semiSound" src="semi.mp3"></audio>
 
 <script>
-// Kodlarınız (Son düzgün çalışan kodunuz) burada
-// Sonrasında tarih seçimi ile ilgili ek mantık eklenecek.
+  // Canvas ayarları
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
-const roomTypes = {
-    "NG Sapanca": ["Superior", "Superior Deluxe", "Junior Suite", "Senior Suite", "Kral Dairesi"],
-    "NG Enjoy": ["Deluxe", "Superior Deluxe", "Teraslı Superior Deluxe", "Suite", "Grand Suite", "Kral Dairesi"]
-};
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-const tabs = document.querySelectorAll('nav button');
-const tabContents = document.querySelectorAll('.tab-content');
-function showTab(id) {
-    tabContents.forEach(tab => {
-        tab.style.display = (tab.id === id) ? 'block':'none';
-    });
-}
-tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-        showTab(btn.getAttribute('data-tab'));
-    });
-});
-showTab('formTab');
+  // Kuş görseli
+  const birdImg = new Image();
+  birdImg.src = 'umut.png'; // Arka planı şeffaf bir PNG kullanın
 
-let pendingReservations = JSON.parse(localStorage.getItem('pendingReservations')) || [];
-let processedReservations = JSON.parse(localStorage.getItem('processedReservations')) || [];
-let stops = JSON.parse(localStorage.getItem('stops')) || [];
-let shiftNotes = JSON.parse(localStorage.getItem('shiftNotes')) || [];
+  // Seymos görseli (HTML tarafında id="seymosImg" ekledik)
+  const seymosImgEl = document.getElementById('seymosImg');
 
-// === BAĞLANTI (İPLİK) EKLENTİSİ İÇİN YENİ DEĞİŞKENLER ===
-let connections = JSON.parse(localStorage.getItem('connections')) || []; 
-// connections: [ { sourceId: <noteId>, targetId: <noteId> }, ... ]
+  // Ses elementleri
+  const jumpSound = document.getElementById('jumpSound');
+  const passSounds = [
+    document.getElementById('passSound1'),
+    document.getElementById('passSound2'),
+    document.getElementById('passSound3'),
+    document.getElementById('passSound4')
+  ];
+  // Kullanıcı yandığında çalacak ses
+  const semiSound = document.getElementById('semiSound');
 
-// “Connect” işleminde ilk seçilen not id’si
-let connectionSourceId = null;
+  // Ekran elementleri
+  const startScreen = document.getElementById('startScreen');
+  const startBtn = document.getElementById('startBtn');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const retryBtn = document.getElementById('retryBtn');
 
-const saveBtn = document.getElementById('saveBtn');
-const pendingList = document.getElementById('pendingList');
-const processedList = document.getElementById('processedList');
-const detailsContent = document.getElementById('detailsContent');
-const markAsProcessedBtn = document.getElementById('markAsProcessedBtn');
-const backToPendingBtn = document.getElementById('backToPendingBtn');
-const searchInput = document.getElementById('searchInput');
+  // Kuşun parametreleri
+  let birdX = 50;
+  let birdY = 50;
+  let birdSize = 40;
+  let velocity = 0;
+  let gravity = 0.09;   // Düşme hızını biraz daha yumuşattık
+  let jumpPower = -4;   // Yukarı zıplama miktarı
 
-const formLocation = document.getElementById('location');
-const formRoomType = document.getElementById('roomType');
-const checkInField = document.getElementById('checkIn');
-const checkOutField = document.getElementById('checkOut');
+  // Engellerin parametreleri
+  let obstacles = [];
+  let obstacleWidth = 60;
+  let gapSize = 220;   // Engeller arasındaki boşluğu büyüttük
+  let obstacleSpeed = 2; 
+  let frameCount = 0;
+  let obstaclesPassed = 0; // Kaç engel geçildi
 
-const stopLocation = document.getElementById('stopLocation');
-const stopStart = document.getElementById('stopStart');
-const stopEnd = document.getElementById('stopEnd');
-const addStopBtn = document.getElementById('addStopBtn');
-const stopList = document.getElementById('stopList');
-const stopRoomTypeContainer = document.getElementById('stopRoomTypeContainer');
+  // Seymos'un konumu ve boyutu
+  let seymosX = 0;     // Başlarken sağa yerleştireceğiz (startGame() içinde ayarlanacak)
+  let seymosY = 50;    // Yukarıdan 50px
+  let seymosWidth = 150;   // CSS ile aynı değerde tutuyoruz
+  let seymosHeight = 150;  // Oranlı resim varsayılıyor
 
-const shiftNoteInput = document.getElementById('shiftNoteInput');
-const addShiftNoteBtn = document.getElementById('addShiftNoteBtn');
-const shiftNoteBoard = document.getElementById('shiftNoteBoard');
+  // Oyun durumu
+  let isGameOver = false;
+  let isGameStarted = false;
 
-const modalOverlay = document.getElementById('modalOverlay');
-const modalRoomTypeList = document.getElementById('modalRoomTypeList');
-const modalCancelBtn = document.getElementById('modalCancelBtn');
-const modalRemoveBtn = document.getElementById('modalRemoveBtn');
+  function gameLoop() {
+    if (!isGameOver && isGameStarted) {
+      update();
+      draw();
+    }
+    requestAnimationFrame(gameLoop);
+  }
 
-let currentReservationIndex = null; 
-let currentReservationProcessed = false; 
-let currentStopIndex = null;
+  function update() {
+    frameCount++;
 
-function renderPendingList() {
-    pendingList.innerHTML = '';
-    pendingReservations.forEach((res, index) => {
-        const li = document.createElement('li');
-        li.textContent = res.guestName;
-        li.addEventListener('click', () => {
-            currentReservationIndex = index;
-            currentReservationProcessed = false;
-            showDetails(res, false); 
-        });
-        pendingList.appendChild(li);
-    });
-}
+    // Kuşa yerçekimi uygula
+    velocity += gravity;
+    birdY += velocity;
 
-function renderProcessedList() {
-    processedList.innerHTML = '';
-    processedReservations.forEach((res, index) => {
-        const li = document.createElement('li');
-        li.textContent = res.guestName;
-        
-        // Add Delete Button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Sil';
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.style.marginLeft = '10px';
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if(confirm('Bu rezervasyonu silmek istediğinizden emin misiniz?')) {
-                processedReservations.splice(index, 1);
-                saveReservations();
-                renderProcessedList();
-            }
-        });
-        li.appendChild(deleteBtn);
-        
-        li.addEventListener('click', () => {
-            currentReservationIndex = index;
-            currentReservationProcessed = true;
-            showDetails(res, true);
-        });
-        processedList.appendChild(li);
-    });
-}
+    // Seymos'un x konumunu engellerle aynı hızda sola kaydırıyoruz
+    seymosX -= obstacleSpeed;
+    // HTML img elementinin "left" stilini güncelleyelim:
+    seymosImgEl.style.left = seymosX + 'px';
 
-function saveReservations() {
-    localStorage.setItem('pendingReservations', JSON.stringify(pendingReservations));
-    localStorage.setItem('processedReservations', JSON.stringify(processedReservations));
-}
-
-saveBtn.addEventListener('click', () => {
-    const location = formLocation.value;
-    const guestName = document.getElementById('guestName').value;
-    const personCount = document.getElementById('personCount').value;
-    const checkIn = checkInField.value;
-    const checkOut = checkOutField.value;
-    const phone = document.getElementById('phone').value;
-    const email = document.getElementById('email').value;
-    const rType = formRoomType.value;
-    const price = document.getElementById('price').value;
-    const discount = document.getElementById('discount').value;
-    const notes = document.getElementById('notes').value;
-
-    if(!guestName) {
-        alert("Misafir ismi zorunludur.");
-        return;
+    // Toplam 7 engel oluşturmak istiyoruz
+    // - İlk 6 engel normal
+    // - 7. engel ise boşluksuz (geçilemez)
+    // Engelleri belirli aralıklarla yaratmaya devam, ama 7'ye ulaşınca dur.
+    if (obstacles.length < 7 && frameCount % 250 === 0) {
+      // Engellerin sayısı 6'ya ulaştıysa, sıradaki engeli (7.) boşluksuz yap
+      if (obstacles.length === 6) {
+        createFinalObstacle(); // 7. engel (boşluksuz)
+      } else {
+        createObstacle();      // Normal engel
+      }
     }
 
-    const reservation = {
-        location,
-        guestName,
-        personCount,
-        checkIn,
-        checkOut,
-        phone,
-        email,
-        roomType: rType,
-        price,
-        discount,
-        notes
-    };
+    // Engelleri hareket ettir
+    for (let i = 0; i < obstacles.length; i++) {
+      obstacles[i].x -= obstacleSpeed;
 
-    pendingReservations.push(reservation);
-    saveReservations();
-    renderPendingList();
-    alert('Rezervasyon bekleyenlere eklendi!');
-    document.getElementById('guestName').value = '';
-    document.getElementById('personCount').value = '';
-    checkInField.value = '';
-    checkOutField.value = '';
-    document.getElementById('phone').value = '';
-    document.getElementById('email').value = '';
-    formRoomType.selectedIndex = 0;
-    document.getElementById('price').value = '';
-    document.getElementById('discount').value = '';
-    document.getElementById('notes').value = '';
-    checkInField.classList.remove('date-red','date-green');
-    checkOutField.classList.remove('date-red','date-green');
+      // Kuş engeli tamamen geçince rastgele ses çal
+      if (!obstacles[i].isPassed && obstacles[i].x + obstacleWidth < birdX) {
+        obstacles[i].isPassed = true; 
+        playRandomPassSound();
+        obstaclesPassed++;
 
-    showTab('pendingTab');
-});
-
-function formatDateTR(dateString) {
-    if(!dateString) return '';
-    const dateObj = new Date(dateString);
-    return dateObj.toLocaleDateString('tr-TR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-function showDetails(reservation, processed) {
-    showTab('detailsTab');
-    detailsContent.innerHTML = '';
-
-    const copyableFields = ["Telefon", "Mail Adresi", "Özel Notlar"];
-
-    function createDetailItem(labelText, value) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'detail-item';
-
-        const label = document.createElement('label');
-        label.textContent = labelText + ':';
-        wrapper.appendChild(label);
-
-        const val = document.createElement('span');
-        val.textContent = value;
-        val.style.marginLeft = '10px';
-        wrapper.appendChild(val);
-
-        if(!processed && copyableFields.includes(labelText)) {
-            const copyBtn = document.createElement('button');
-            copyBtn.textContent = 'Kopyala';
-            copyBtn.className = 'copy-btn';
-            copyBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(value);
-                alert(labelText + ' kopyalandı!');
-            });
-            wrapper.appendChild(copyBtn);
+        // Her 5 engelde hız arttır
+        if (obstaclesPassed % 5 === 0) {
+          obstacleSpeed += 0.5; 
         }
 
-        return wrapper;
+        // Her 3 engelde frameCount'u 20 azalt
+        if (obstaclesPassed % 3 === 0) {
+          frameCount -= 20;
+          if (frameCount < 0) frameCount = 0;
+        }
+      }
+
+      // Ekrandan çıkan engeli listeden kaldır
+      if (obstacles[i].x + obstacleWidth < 0) {
+        obstacles.splice(i, 1);
+        i--;
+      }
     }
 
-    detailsContent.appendChild(createDetailItem('Lokasyon', reservation.location));
-    detailsContent.appendChild(createDetailItem('Misafir İsmi', reservation.guestName));
-    detailsContent.appendChild(createDetailItem('Kişi sayısı', reservation.personCount));
-    const checkInValue = formatDateTR(reservation.checkIn);
-    const checkOutValue = formatDateTR(reservation.checkOut);
-    detailsContent.appendChild(createDetailItem('Check-in Tarihi', checkInValue));
-    detailsContent.appendChild(createDetailItem('Check-out Tarihi', checkOutValue));
-    detailsContent.appendChild(createDetailItem('Telefon', reservation.phone));
-    detailsContent.appendChild(createDetailItem('Mail Adresi', reservation.email));
-    detailsContent.appendChild(createDetailItem('Oda Tipi', reservation.roomType));
-    detailsContent.appendChild(createDetailItem('Fiyat', reservation.price));
-    detailsContent.appendChild(createDetailItem('İndirim Oranı', reservation.discount));
-    detailsContent.appendChild(createDetailItem('Özel Notlar', reservation.notes));
-
-    markAsProcessedBtn.style.display = processed ? 'none':'inline-block';
-}
-
-markAsProcessedBtn.addEventListener('click', () => {
-    if (currentReservationIndex !== null && currentReservationProcessed === false) {
-        const reservation = pendingReservations.splice(currentReservationIndex, 1)[0];
-        processedReservations.push(reservation);
-        saveReservations();
-        renderPendingList();
-        renderProcessedList();
-        showTab('pendingTab');
-        currentReservationIndex = null;
-        currentReservationProcessed = false;
+    // Kuşun ekran dışına çıkma durumu
+    if (birdY + birdSize > canvas.height || birdY < 0) {
+      gameOver();
     }
-});
 
-backToPendingBtn.addEventListener('click', () => {
-    if(currentReservationProcessed) {
-        showTab('processedTab');
-    } else {
-        showTab('pendingTab');
-    }
-});
+    // Engellere çarpma kontrolü
+    checkCollision();
+  }
 
-searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    const filtered = processedReservations.filter(res => res.guestName.toLowerCase().includes(query));
-    processedList.innerHTML = '';
-    filtered.forEach((res) => {
-        const li = document.createElement('li');
-        li.textContent = res.guestName;
-        li.addEventListener('click', () => {
-            const originalIndex = processedReservations.indexOf(res);
-            currentReservationIndex = originalIndex;
-            currentReservationProcessed = true;
-            showDetails(res, true);
-        });
-        processedList.appendChild(li);
+  function draw() {
+    // Canvas'ı temizleyelim
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Kuşu çiz
+    ctx.drawImage(birdImg, birdX, birdY, birdSize, birdSize);
+
+    // Engelleri çiz
+    obstacles.forEach(obs => {
+      ctx.fillStyle = '#228B22';
+      // Üst engel
+      ctx.fillRect(obs.x, 0, obstacleWidth, obs.topHeight);
+      // Alt engel
+      ctx.fillRect(obs.x, obs.bottomY, obstacleWidth, obs.bottomHeight);
     });
-});
+  }
 
-// STOP fonksiyonları
-function saveStops() {
-    localStorage.setItem('stops', JSON.stringify(stops));
-}
-
-// Yardımcı Fonksiyon: Tarihleri Türkçe formatta döndürür
-function formatDateForDisplay(dateString) {
-    const dateObj = new Date(dateString);
-    const options = { day: 'numeric', month: 'long' };
-    return dateObj.toLocaleDateString('tr-TR', options);
-}
-
-function renderStops() {
-    stopList.innerHTML = '';
-    stops.forEach((stop, index) => {
-        let displayText = '';
-        const startDateFormatted = formatDateForDisplay(stop.startDate);
-        const endDateFormatted = formatDateForDisplay(stop.endDate);
-        const startDate = new Date(stop.startDate);
-        const endDate = new Date(stop.endDate);
-        const timeDiff = endDate - startDate;
-        const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1; // dahil gün
-
-        if (stop.roomTypes.includes('All')) {
-            if (dayDiff === 1) {
-                displayText = `${stop.location}: Tüm oda tipleri ${startDateFormatted}'ta stoplu`;
-            } else {
-                displayText = `${stop.location}: Tüm oda tipleri ${startDateFormatted} - ${endDateFormatted}'a kadar stoplu`;
-            }
-        } else {
-            const roomTypesStr = stop.roomTypes.join(', ');
-            if (dayDiff === 1) {
-                displayText = `${stop.location}: ${roomTypesStr} odalar ${startDateFormatted}'ta stoplu`;
-            } else {
-                displayText = `${stop.location}: ${roomTypesStr} odalar ${startDateFormatted} - ${endDateFormatted}'a kadar stoplu`;
-            }
-        }
-
-        const li = document.createElement('li');
-        li.textContent = displayText;
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Kaldır';
-        removeBtn.className = 'muted-btn'; 
-        removeBtn.addEventListener('click', () => {
-            currentStopIndex = index;
-            openRemoveModal(stop);
-        });
-        li.appendChild(removeBtn);
-        stopList.appendChild(li);
+  // Normal engel oluşturma
+  function createObstacle() {
+    const topHeight = Math.floor(Math.random() * (canvas.height - gapSize - 100)) + 50;
+    const bottomHeight = canvas.height - topHeight - gapSize;
+    obstacles.push({
+      x: canvas.width,
+      topHeight: topHeight,
+      bottomHeight: bottomHeight,
+      bottomY: topHeight + gapSize,
+      isPassed: false
     });
-}
+  }
 
-addStopBtn.addEventListener('click', () => {
-    const loc = stopLocation.value;
-    const sDate = stopStart.value;
-    const eDate = stopEnd.value;
-
-    if(!sDate || !eDate) {
-        alert("Stop başlama ve bitiş tarihi seçilmelidir.");
-        return;
-    }
-
-    const selectedRoomTypes = getSelectedStopRoomTypes();
-    if(selectedRoomTypes.length === 0) {
-        alert("En az bir oda tipi veya 'All' seçilmelidir.");
-        return;
-    }
-
-    stops.push({
-        location: loc,
-        startDate: sDate,
-        endDate: eDate,
-        roomTypes: selectedRoomTypes
+  // 7. engel (boşluksuz) -> geçilemez
+  function createFinalObstacle() {
+    obstacles.push({
+      x: canvas.width,
+      topHeight: canvas.height, // Tüm ekran kadar
+      bottomHeight: 0,
+      bottomY: canvas.height,   // Alt engel yok
+      isPassed: false
     });
-    saveStops();
-    renderStops();
-    alert("Stop eklendi!");
-    stopStart.value = '';
-    stopEnd.value = '';
-    uncheckAllStopBoxes();
-    checkDatesHighlight();
-});
+  }
 
-function isDateInStopRange(location, date, roomType) {
-    const d = new Date(date);
-    for(const stop of stops) {
-        if(stop.location === location) {
-            const start = new Date(stop.startDate);
-            const end = new Date(stop.endDate);
-            if(d >= start && d <= end) {
-                if(stop.roomTypes.includes('All') || stop.roomTypes.includes(roomType)) {
-                    return true;
-                }
-            }
+  function checkCollision() {
+    for (let i = 0; i < obstacles.length; i++) {
+      let obs = obstacles[i];
+      if (
+        birdX + birdSize > obs.x && 
+        birdX < obs.x + obstacleWidth
+      ) {
+        // Üst veya alt engelle temas
+        if (birdY < obs.topHeight || (birdY + birdSize) > obs.bottomY) {
+          gameOver();
+          break;
         }
+      }
     }
-    return false;
-}
+  }
 
-function checkDatesHighlight() {
-    const loc = formLocation.value;
-    const rt = formRoomType.value;
-    const checkInDate = checkInField.value;
-    const checkOutDate = checkOutField.value;
+  function playRandomPassSound() {
+    const index = Math.floor(Math.random() * passSounds.length);
+    passSounds[index].currentTime = 0;
+    passSounds[index].play();
+  }
 
-    if(checkInDate) {
-        if(isDateInStopRange(loc, checkInDate, rt)) {
-            checkInField.classList.remove('date-green');
-            checkInField.classList.add('date-red');
-        } else {
-            checkInField.classList.remove('date-red');
-            checkInField.classList.add('date-green');
-        }
-        // Check-in seçildikten sonra check-out için min tarih ayarlama
-        checkOutField.min = checkInDate;
-    } else {
-        checkInField.classList.remove('date-red','date-green');
-        checkOutField.min = '';
+  function gameOver() {
+    isGameOver = true;
+    gameOverScreen.style.display = 'flex';
+    // Kullanıcı yandığında semi.mp3 çalsın
+    semiSound.currentTime = 0;
+    semiSound.play();
+  }
+
+  function startGame() {
+    isGameOver = false;
+    isGameStarted = true;
+    gameOverScreen.style.display = 'none';
+    startScreen.style.display = 'none';
+
+    // semi.mp3 çalıyorsa durdur
+    semiSound.pause();
+    semiSound.currentTime = 0;
+
+    // Değerleri sıfırla
+    birdX = 50;
+    birdY = canvas.height / 2 - birdSize / 2;
+    velocity = 0;
+    obstacles = [];
+    frameCount = 0;
+    obstaclesPassed = 0;
+    obstacleSpeed = 2;
+
+    // Seymos başlangıçta ekranın sağında belirecek
+    // Genişlik: seymosWidth = 150
+    // Ekranda sağdan 50px içeride gibi görünmesi için:
+    seymosX = canvas.width - seymosWidth - 50;
+    seymosY = 50; 
+    // HTML img görünür olsun
+    seymosImgEl.style.display = 'block';
+    seymosImgEl.style.left = seymosX + 'px';
+    seymosImgEl.style.top = seymosY + 'px';
+  }
+
+  // Space tuşu ile zıplama
+  document.addEventListener('keydown', function(e) {
+    if (e.code === 'Space') {
+      jumpSound.currentTime = 0;
+      jumpSound.play();
+      velocity = jumpPower;
     }
-
-    if(checkOutDate) {
-        if(isDateInStopRange(loc, checkOutDate, rt)) {
-            checkOutField.classList.remove('date-green');
-            checkOutField.classList.add('date-red');
-        } else {
-            checkOutField.classList.remove('date-red');
-            checkOutField.classList.add('date-green');
-        }
-    } else {
-        checkOutField.classList.remove('date-red','date-green');
-    }
-}
-
-function updateRoomTypeOptionsForReservation() {
-    const loc = formLocation.value;
-    formRoomType.innerHTML = '';
-    roomTypes[loc].forEach(rt => {
-        const opt = document.createElement('option');
-        opt.value = rt;
-        opt.textContent = rt;
-        formRoomType.appendChild(opt);
-    });
-    checkDatesHighlight();
-}
-
-function updateRoomTypeOptionsForStop() {
-    const loc = stopLocation.value;
-    stopRoomTypeContainer.innerHTML = '';
-
-    const allLabel = document.createElement('label');
-    const allCheck = document.createElement('input');
-    allCheck.type = 'checkbox';
-    allCheck.value = 'All';
-    allCheck.addEventListener('change', () => {
-        if(allCheck.checked) {
-            Array.from(stopRoomTypeContainer.querySelectorAll('input[type=checkbox]')).forEach(ch => {
-                if(ch.value !== 'All') {
-                    ch.checked = false;
-                    ch.disabled = true;
-                }
-            });
-        } else {
-            Array.from(stopRoomTypeContainer.querySelectorAll('input[type=checkbox]')).forEach(ch => {
-                if(ch.value !== 'All') {
-                    ch.disabled = false;
-                }
-            });
-        }
-    });
-    allLabel.appendChild(allCheck);
-    allLabel.appendChild(document.createTextNode('All'));
-    stopRoomTypeContainer.appendChild(allLabel);
-    stopRoomTypeContainer.appendChild(document.createElement('br'));
-
-    roomTypes[loc].forEach(rt => {
-        const label = document.createElement('label');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.value = rt;
-        label.appendChild(cb);
-        label.appendChild(document.createTextNode(rt));
-        stopRoomTypeContainer.appendChild(label);
-        stopRoomTypeContainer.appendChild(document.createElement('br'));
-    });
-}
-
-function getSelectedStopRoomTypes() {
-    const checkboxes = stopRoomTypeContainer.querySelectorAll('input[type=checkbox]');
-    const selected = [];
-    for(const cb of checkboxes) {
-        if(cb.checked) {
-            selected.push(cb.value);
-        }
-    }
-    return selected;
-}
-
-function uncheckAllStopBoxes() {
-    const checkboxes = stopRoomTypeContainer.querySelectorAll('input[type=checkbox]');
-    for(const cb of checkboxes) {
-        cb.checked = false;
-        cb.disabled = false;
-    }
-    // stop tarihlerini de resetleyelim:
-    stopStart.value = '';
-    stopEnd.value = '';
-    stopEnd.min = '';
-}
-
-// Shift notları
-function getRandomColor() {
-    const r = Math.floor(Math.random() * 256);
-    const g = Math.floor(Math.random() * 256);
-    const b = Math.floor(Math.random() * 256);
-    return `rgba(${r}, ${g}, ${b}, 0.7)`;
-}
-
-function renderStickyNotes() {
-    const board = document.getElementById('shiftNoteBoard');
-    board.innerHTML = '';
-    // SVG katmanı en üste gelsin diye en alta eklenmişti, yine de orada dursun
-    // board > connectionsLayer var, o sabit kalsın
-    // notları çizerken notlar board içinde svg üstünde yer alır.
-
-    shiftNotes.forEach((note, index) => {
-        // Note'a bir ID verelim, yoksa index üzerinden ilerliyoruz
-        // Not: ID'yi localStorage'a kaydedelim ki tarayıcı yenilenince karışmasın
-        if (note.id == null) {
-            // rastgele bir uniq ID
-            note.id = 'note-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
-        }
-
-        const noteDiv = document.createElement('div');
-        noteDiv.className = 'sticky-note';
-        noteDiv.style.background = note.color;
-        noteDiv.style.left = note.x + 'px';
-        noteDiv.style.top = note.y + 'px';
-
-        // Buttons container
-        const buttonDiv = document.createElement('div');
-        buttonDiv.className = 'note-buttons';
-
-        // Edit button
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
-        editBtn.innerHTML = '✎';
-        editBtn.title = 'Düzenle';
-        editBtn.addEventListener('click', () => {
-            const content = noteDiv.querySelector('.note-content');
-            content.contentEditable = true;
-            content.focus();
-            content.addEventListener('blur', () => {
-                content.contentEditable = false;
-                note.text = content.textContent;
-                saveShiftNotes();
-            }, { once: true });
-        });
-
-        // Close button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'close-btn';
-        closeBtn.innerHTML = '×';
-        closeBtn.title = 'Sil';
-        closeBtn.addEventListener('click', () => {
-            // Silmeden önce bu not ile ilgili connections'ı da kaldıracağız
-            removeConnectionsOfNote(note.id);
-            shiftNotes.splice(index, 1);
-            saveShiftNotes();
-            renderStickyNotes();
-            renderConnections(); // Bağlantıları da güncelle
-        });
-
-        // === BAĞLANTI (İPLİK) EKLENTİ: Connect butonu ===
-        const connectBtn = document.createElement('button');
-        connectBtn.innerHTML = '⇆';
-        connectBtn.title = 'Connect (ip bağla)';
-        connectBtn.style.opacity = 0.6;
-        connectBtn.addEventListener('click', () => {
-            if (connectionSourceId === null) {
-                // Henüz bir kaynak seçili değilse, bu not kaynak olsun
-                connectionSourceId = note.id;
-                alert("Bağlamak istediğiniz ikinci notu seçin.");
-            } else {
-                // Zaten bir kaynak seçili. Bağlayalım
-                if (connectionSourceId === note.id) {
-                    alert("Aynı notla kendisini bağlayamazsınız!");
-                } else {
-                    // Bağlantıyı ekle
-                    connections.push({ sourceId: connectionSourceId, targetId: note.id });
-                    saveConnections();
-                    renderConnections();
-                }
-                connectionSourceId = null; // işlem bitti
-            }
-        });
-
-        // === BAĞLANTI SİLME BUTONU ===
-        const removeLinkBtn = document.createElement('button');
-        removeLinkBtn.innerHTML = '⨂';
-        removeLinkBtn.title = 'Remove Link (bu notun bağlantılarını sil)';
-        removeLinkBtn.style.opacity = 0.6;
-        removeLinkBtn.addEventListener('click', () => {
-            // Bu notun dahil olduğu bağlantıları sil
-            removeConnectionsOfNote(note.id);
-            saveConnections();
-            renderConnections();
-        });
-
-        buttonDiv.appendChild(editBtn);
-        buttonDiv.appendChild(closeBtn);
-        buttonDiv.appendChild(connectBtn);
-        buttonDiv.appendChild(removeLinkBtn);
-
-        noteDiv.appendChild(buttonDiv);
-
-        // Note content
-        const textDiv = document.createElement('div');
-        textDiv.className = 'note-content';
-        textDiv.textContent = note.text;
-        noteDiv.appendChild(textDiv);
-
-        // Gelişmiş drag fonksiyonelliği
-        let isDragging = false;
-        let initialX, initialY;
-        let currentX, currentY;
-        // Sürüklerken eğer notun dahil olduğu bir “grup” varsa, hepsini hareket ettireceğiz.
-        let groupNoteIds = [];
-
-        noteDiv.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        function dragStart(e) {
-            // Buton tıklaması drag'i tetiklemesin
-            if (e.target.closest('.note-buttons')) return;
-            if (e.target.contentEditable === 'true') return; // düzenleme modunda da drag olmasın
-
-            // Drag’i başlat
-            isDragging = true;
-            noteDiv.classList.add('dragging');
-
-            initialX = e.clientX - note.x;
-            initialY = e.clientY - note.y;
-
-            // Bu notun bağlı olduğu notları da bulalım (grup). BFS/DFS yapabiliriz
-            groupNoteIds = getConnectedGroup(note.id);
-        }
-
-        function drag(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-
-            // Sadece bu not değil, grup içindeki tüm notları hareket ettir
-            const diffX = currentX - note.x;
-            const diffY = currentY - note.y;
-
-            groupNoteIds.forEach(nid => {
-                const nobj = shiftNotes.find(nt => nt.id === nid);
-                if (nobj) {
-                    nobj.x += diffX;
-                    nobj.y += diffY;
-                }
-            });
-
-            // Değerleri kaydet
-            // Sonra bu notun x,y de güncellenmeli
-            note.x = currentX;
-            note.y = currentY;
-
-            saveShiftNotes();
-            renderStickyNotes();  // Tüm notları yeniden çiz (diğerleri de güncel konumda gelsin)
-            renderConnections();  // Çizgileri de güncelle
-        }
-
-        function dragEnd(e) {
-            if (!isDragging) return;
-            isDragging = false;
-            noteDiv.classList.remove('dragging');
-        }
-
-        board.appendChild(noteDiv);
-    });
-}
-
-// connections dizisini kaydedelim
-function saveConnections() {
-    localStorage.setItem('connections', JSON.stringify(connections));
-}
-
-// shiftNotes'u kaydet
-function saveShiftNotes() {
-    localStorage.setItem('shiftNotes', JSON.stringify(shiftNotes));
-}
-
-// Bu notun tüm bağlantılarını (connections) silen fonksiyon
-function removeConnectionsOfNote(noteId) {
-    connections = connections.filter(conn => conn.sourceId !== noteId && conn.targetId !== noteId);
-}
-
-// === BAĞLANTI GRUBU BULMA (BFS veya DFS) ===
-// Tek bir notu sürüklerken bağlı olduğu diğer notları da hareket ettirmek için
-function getConnectedGroup(noteId) {
-    // adjacency list kuralım
-    let adj = {};
-    shiftNotes.forEach(n => {
-        adj[n.id] = [];
-    });
-    connections.forEach(conn => {
-        adj[conn.sourceId].push(conn.targetId);
-        adj[conn.targetId].push(conn.sourceId);
-    });
-
-    // BFS veya DFS yap
-    let visited = new Set();
-    let queue = [noteId];
-    visited.add(noteId);
-
-    while (queue.length > 0) {
-        let current = queue.shift();
-        for (let neighbor of adj[current]) {
-            if (!visited.has(neighbor)) {
-                visited.add(neighbor);
-                queue.push(neighbor);
-            }
-        }
-    }
-    return Array.from(visited);
-}
-
-// === ÇİZGİLERİ RENDER ETME ===
-function renderConnections() {
-    const svg = document.getElementById('connectionsLayer');
-    svg.innerHTML = ''; // önce temizle
-
-    // Tüm bağlantılar için line çiz
-    // Her bir notun orta noktasını (cx, cy) bulup line x1,y1 -> x2,y2
-    connections.forEach(conn => {
-        const sourceNote = shiftNotes.find(n => n.id === conn.sourceId);
-        const targetNote = shiftNotes.find(n => n.id === conn.targetId);
-        if (!sourceNote || !targetNote) return; // biri silinmiş olabilir
-
-        // Notun merkezini hesaplayalım
-        const sx = sourceNote.x + 100;  // notun genişliği 200 px idi -> yarısı 100
-        const sy = sourceNote.y + 50;   // ~ yarı yüksekliği
-        const tx = targetNote.x + 100;
-        const ty = targetNote.y + 50;
-
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute('x1', sx);
-        line.setAttribute('y1', sy);
-        line.setAttribute('x2', tx);
-        line.setAttribute('y2', ty);
-        line.setAttribute('class', 'note-connection');
-        svg.appendChild(line);
-    });
-}
-
-addShiftNoteBtn.removeEventListener('click', null); // Avoid duplicates
-addShiftNoteBtn.addEventListener('click', () => {
-    const text = shiftNoteInput.value.trim();
-    if(!text) {
-        alert("Not boş olamaz!");
-        return;
-    }
-    shiftNotes.push({
-        text: text,
-        color: getRandomColor(),
-        x: 20,
-        y: 20,
-        // id ve benzeri alanlar renderStickyNotes içinde atanabilir
-    });
-    saveShiftNotes();
-    renderStickyNotes();
-    renderConnections();
-    shiftNoteInput.value = '';
-});
-
-// Modal ile stop kaldırma
-function openRemoveModal(stop) {
-    modalRoomTypeList.innerHTML = '';
-
-    const loc = stop.location;
-    let rtList = stop.roomTypes;
-
-    let effectiveRoomTypes;
-    if(rtList.includes('All')) {
-        effectiveRoomTypes = roomTypes[loc];
-    } else {
-        effectiveRoomTypes = rtList;
-    }
-
-    effectiveRoomTypes.forEach(rt => {
-        const label = document.createElement('label');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.value = rt;
-        label.appendChild(cb);
-        label.appendChild(document.createTextNode(rt));
-        modalRoomTypeList.appendChild(label);
-        modalRoomTypeList.appendChild(document.createElement('br'));
-    });
-
-    modalOverlay.style.display = 'flex';
-}
-
-modalCancelBtn.addEventListener('click', () => {
-    modalOverlay.style.display = 'none';
-    currentStopIndex = null;
-});
-
-modalRemoveBtn.addEventListener('click', () => {
-    if(currentStopIndex === null) return;
-    const stop = stops[currentStopIndex];
-    const loc = stop.location;
-    let rtList = stop.roomTypes;
-
-    const checkboxes = modalRoomTypeList.querySelectorAll('input[type=checkbox]');
-    const removeSelected = [];
-    for(const cb of checkboxes) {
-        if(cb.checked) {
-            removeSelected.push(cb.value);
-        }
-    }
-
-    if(removeSelected.length === 0) {
-        alert("Hiçbir oda tipi seçilmedi. İşlem iptal edildi.");
-        modalOverlay.style.display = 'none';
-        return;
-    }
-
-    if(rtList.includes('All')) {
-        const allRT = roomTypes[loc];
-        const remaining = allRT.filter(r => !removeSelected.includes(r));
-        if(remaining.length === 0) {
-            stops.splice(currentStopIndex, 1);
-        } else {
-            stop.roomTypes = remaining;
-        }
-    } else {
-        const remaining = rtList.filter(r => !removeSelected.includes(r));
-        if(remaining.length === 0) {
-            stops.splice(currentStopIndex, 1);
-        } else {
-            stop.roomTypes = remaining;
-        }
-    }
-
-    saveStops();
-    renderStops();
-    checkDatesHighlight();
-    modalOverlay.style.display = 'none';
-    currentStopIndex = null;
-});
-
-// Hesaplama Fonksiyonları
-const bbCalcBtn = document.getElementById('bbCalcBtn');
-const discountCalcBtn = document.getElementById('discountCalcBtn');
-const agencyCalcBtn = document.getElementById('agencyCalcBtn');
-const applyDiscountCalcBtn = document.getElementById('applyDiscountCalcBtn');
-
-const bbSection = document.getElementById('bbSection');
-const discountSection = document.getElementById('discountSection');
-const agencySection = document.getElementById('agencySection');
-const applyDiscountSection = document.getElementById('applyDiscountSection');
-
-const bbPriceInput = document.getElementById('bbPriceInput');
-const bbCalcStartBtn = document.getElementById('bbCalcStartBtn');
-const bbResult = document.getElementById('bbResult');
-
-const originalPriceInput = document.getElementById('originalPriceInput');
-const targetPriceInput = document.getElementById('targetPriceInput');
-const discountCalcStartBtn = document.getElementById('discountCalcStartBtn');
-const discountResult = document.getElementById('discountResult');
-
-const agencyPriceInput = document.getElementById('agencyPriceInput');
-const agencyCurrencySelect = document.getElementById('agencyCurrencySelect');
-const agencyCalcStartBtn = document.getElementById('agencyCalcStartBtn');
-const agencyResult = document.getElementById('agencyResult');
-
-// İndirim yap Hesaplama Elemanları
-const applyDiscountBtn = document.getElementById('applyDiscountBtn');
-const applyDiscountOriginalPrice = document.getElementById('applyDiscountOriginalPrice');
-const applyDiscountPercentage = document.getElementById('applyDiscountPercentage');
-const applyDiscountResult = document.getElementById('applyDiscountResult');
-
-function hideAllCalcSections() {
-    bbSection.style.display = 'none';
-    discountSection.style.display = 'none';
-    agencySection.style.display = 'none';
-    applyDiscountSection.style.display = 'none';
-}
-
-bbCalcBtn.addEventListener('click', () => {
-    hideAllCalcSections();
-    bbSection.style.display = 'block';
-});
-
-discountCalcBtn.addEventListener('click', () => {
-    hideAllCalcSections();
-    discountSection.style.display = 'block';
-});
-
-agencyCalcBtn.addEventListener('click', () => {
-    hideAllCalcSections();
-    agencySection.style.display = 'block';
-});
-
-applyDiscountCalcBtn.addEventListener('click', () => {
-    hideAllCalcSections();
-    applyDiscountSection.style.display = 'block';
-});
-
-bbCalcStartBtn.addEventListener('click', () => {
-    const p = parseFloat(bbPriceInput.value);
-    if(isNaN(p)) {
-        bbResult.textContent = "Geçersiz fiyat.";
-        return;
-    }
-    const konaklama = p * 0.02;
-    const kdv = p * 0.10;
-    const total = p + konaklama + kdv;
-    bbResult.innerHTML = `
-        Girilen Fiyat: ${p.toFixed(2)} TL<br>
-        %2 Konaklama Vergisi: ${konaklama.toFixed(2)} TL<br>
-        %10 KDV: ${kdv.toFixed(2)} TL<br>
-        Toplam: ${total.toFixed(2)} TL
-    `;
-});
-
-discountCalcStartBtn.addEventListener('click', () => {
-    const original = parseFloat(originalPriceInput.value);
-    const target = parseFloat(targetPriceInput.value);
-    if(isNaN(original) || isNaN(target) || original <= 0 || target < 0) {
-        discountResult.textContent = "Geçersiz değerler.";
-        return;
-    }
-    const discountRate = ((original - target) / original) * 100;
-    discountResult.innerHTML = `
-        Orijinal Fiyat: ${original.toFixed(2)} TL<br>
-        Hedef Fiyat: ${target.toFixed(2)} TL<br>
-        İndirim Oranı: %${discountRate.toFixed(2)}
-    `;
-});
-
-agencyCalcStartBtn.addEventListener('click', () => {
-    const price = parseFloat(agencyPriceInput.value);
-    const currency = agencyCurrencySelect.value;
-    if(isNaN(price) || price <= 0) {
-        agencyResult.textContent = "Geçersiz fiyat.";
-        return;
-    }
-    const net = price / 1.12;
-    const kdvlifiyat = net * 1.10;
-    const komisyon = kdvlifiyat * 0.10;
-
-    agencyResult.innerHTML = `
-        Para Birimi: ${currency}<br>
-        Vergiler dahil başlangıç fiyatı: ${price.toFixed(2)} ${currency}<br>
-        Vergiler çıkarıldıktan sonra: ${net.toFixed(2)} ${currency}<br>
-        KDV eklenmiş fiyat: ${kdvlifiyat.toFixed(2)} ${currency}<br>
-        %10 Komisyon: ${komisyon.toFixed(2)} ${currency}
-    `;
-});
-
-// İndirim yap Hesaplama İşlemi
-applyDiscountBtn.addEventListener('click', () => {
-    // Remove thousand separators and replace comma with dot
-    let original = applyDiscountOriginalPrice.value.replace(/\./g, '').replace(/,/g, '.');
-    original = parseFloat(original);
-    const discountPercentage = parseFloat(applyDiscountPercentage.value);
-
-    if(isNaN(original) || isNaN(discountPercentage) || original <= 0 || discountPercentage < 0) {
-        applyDiscountResult.textContent = "Geçersiz değerler.";
-        return;
-    }
-
-    const discountedPrice = original - (original * (discountPercentage / 100));
-
-    applyDiscountResult.innerHTML = `
-        Orijinal Fiyat: ${original.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} TL<br>
-        İndirim Oranı: %${discountPercentage.toFixed(2)}<br>
-        İndirilen Tutar: ${ (original * (discountPercentage / 100)).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) } TL<br>
-        İndirimli Fiyat: ${discountedPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} TL
-    `;
-});
-
-// Tarih seçimi ile ilgili ek mantıklar:
-// Check-in seçildiğinde check-out'un minimum değeri check-in tarihi olmalı
-checkInField.addEventListener('change', () => {
-    if(checkInField.value) {
-        checkOutField.min = checkInField.value;
-    } else {
-        checkOutField.min = '';
-    }
-    checkDatesHighlight();
-});
-
-// Stop başlangıç-bitiş tarih ilişkisi
-stopStart.addEventListener('change', () => {
-    if(stopStart.value) {
-        stopEnd.min = stopStart.value;
-    } else {
-        stopEnd.min = '';
-    }
-});
-
-// Lokasyon değiştiğinde oda tiplerini güncelle
-formLocation.addEventListener('change', updateRoomTypeOptionsForReservation);
-formRoomType.addEventListener('change', checkDatesHighlight);
-checkInField.addEventListener('change', checkDatesHighlight);
-checkOutField.addEventListener('change', checkDatesHighlight);
-
-stopLocation.addEventListener('change', updateRoomTypeOptionsForStop);
-
-// Sayfa ilk yüklendiğinde listeleri ve stopları göster
-renderPendingList();
-renderProcessedList();
-renderStops();
-renderStickyNotes();
-renderConnections(); // iplikleri de çizelim
-
-updateRoomTypeOptionsForReservation();
-updateRoomTypeOptionsForStop();
-
-const navButtons = document.querySelectorAll('.nav-buttons .btn');
-navButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-    });
-});
+  });
+
+  // Başlat butonu
+  startBtn.addEventListener('click', function() {
+    startGame();
+  });
+
+  // Tekrar dene butonu
+  retryBtn.addEventListener('click', function() {
+    startGame();
+  });
+
+  // Animasyonu başlat
+  gameLoop();
 </script>
 </body>
 </html>
