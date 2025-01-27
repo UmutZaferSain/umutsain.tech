@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gül Yağmuru</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: black;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #makeItBtn {
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        #makeItBtn:hover {
+            transform: scale(1.1);
+        }
+
+        #repeatBtn {
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background-color: #00ff00;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            position: relative;
+            z-index: 1;
+            display: none; /* Initially hidden */
+        }
+
+        #repeatBtn:hover {
+            transform: scale(1.1);
+        }
+
+        .petal {
+            position: absolute;
+            top: -50px;
+            font-size: 30px;
+            color: #ff3366;
+            user-select: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                top: 100%;
+                transform: rotate(720deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="makeItBtn">Make it</button>
+    <button id="repeatBtn">Repeat</button>
+
+    <script>
+        const btn = document.getElementById('makeItBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        let isRaining = false;
+        let interval;
+
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.innerHTML = '🌹';
+            petal.classList.add('petal');
+            
+            // Random position
+            petal.style.left = Math.random() * window.innerWidth + 'px';
+            
+            // Random animation duration (2-5 seconds)
+            const duration = Math.random() * 3 + 2;
+            petal.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(petal);
+            
+            // Remove element after animation
+            setTimeout(() => {
+                petal.remove();
+            }, duration * 1000);
+        }
+
+        btn.addEventListener('click', () => {
+            if (!isRaining) {
+                isRaining = true;
+                interval = setInterval(createPetal, 200); // New petal every 200ms
+                btn.style.display = 'none';
+                setTimeout(() => {
+                    clearInterval(interval);
+                    repeatBtn.style.display = 'block';
+                }, 10000); // Stop creating new petals after 10 seconds
+            }
+        });
+
+        repeatBtn.addEventListener('click', () => {
+            location.reload(); // Reload the page
+        });
+    </script>
+</body>
+</html>
