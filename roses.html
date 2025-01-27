@@ -4,7 +4,21 @@
     <meta charset="UTF-8">
     <title>Gül Yağmuru</title>
     <style>
-        /* MENÜ STİLLERİ */
+        body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+            font-family: 'Menlo', monospace;
+            padding-top: 60px;
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 60px);
+        }
+
         .nav-menu {
             position: fixed;
             top: 0;
@@ -35,34 +49,6 @@
             overflow: hidden;
         }
 
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .nav-link:hover::before {
-            left: 100%;
-        }
-
-        /* ANA İÇERİK STİLLERİ */
-        body {
-            margin: 0;
-            height: 100vh;
-            background-color: black;
-            overflow: hidden;
-            padding-top: 60px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         #makeItBtn {
             padding: 20px 40px;
             font-size: 24px;
@@ -74,7 +60,10 @@
             transition: transform 0.3s;
             position: relative;
             z-index: 1;
-            margin-top: 20px;
+        }
+
+        #makeItBtn:hover {
+            transform: scale(1.1);
         }
 
         #repeatBtn {
@@ -88,17 +77,20 @@
             transition: transform 0.3s;
             position: relative;
             z-index: 1;
-            display: none;
-            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+
+        #repeatBtn:hover {
+            transform: scale(1.1);
         }
 
         .petal {
             position: absolute;
+            top: -50px;
             font-size: 30px;
             color: #ff3366;
             user-select: none;
             animation: fall linear infinite;
-            z-index: 0;
         }
 
         @keyframes fall {
@@ -107,22 +99,19 @@
                 transform: rotate(720deg);
             }
         }
-
-        button:hover {
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body>
     <nav class="nav-menu">
         <div class="nav-links">
-            <a href="index.html" class="nav-link">MATRIX</a>
+            <a href="matrix.html" class="nav-link">MATRIX</a>
             <a href="roses.html" class="nav-link">ROSES</a>
         </div>
     </nav>
-
-    <button id="makeItBtn">Make it</button>
-    <button id="repeatBtn">Repeat</button>
+    <div class="content">
+        <button id="makeItBtn">Make it</button>
+        <button id="repeatBtn">Repeat</button>
+    </div>
 
     <script>
         const btn = document.getElementById('makeItBtn');
@@ -135,15 +124,16 @@
             petal.innerHTML = '🌹';
             petal.classList.add('petal');
             
-            // Menü altından başlat
+            // Random position
             petal.style.left = Math.random() * window.innerWidth + 'px';
-            petal.style.top = (Math.random() * (window.innerHeight - 60) - 30) + 'px';
             
+            // Random animation duration (2-5 seconds)
             const duration = Math.random() * 3 + 2;
             petal.style.animationDuration = duration + 's';
             
             document.body.appendChild(petal);
             
+            // Remove element after animation
             setTimeout(() => {
                 petal.remove();
             }, duration * 1000);
@@ -152,24 +142,17 @@
         btn.addEventListener('click', () => {
             if (!isRaining) {
                 isRaining = true;
-                interval = setInterval(createPetal, 200);
+                interval = setInterval(createPetal, 200); // New petal every 200ms
                 btn.style.display = 'none';
                 setTimeout(() => {
                     clearInterval(interval);
                     repeatBtn.style.display = 'block';
-                }, 10000);
+                }, 10000); // Stop creating new petals after 10 seconds
             }
         });
 
         repeatBtn.addEventListener('click', () => {
-            location.reload();
-        });
-
-        // Boyut değişikliklerini dinle
-        window.addEventListener('resize', () => {
-            document.querySelectorAll('.petal').forEach(petal => {
-                petal.style.left = Math.random() * window.innerWidth + 'px';
-            });
+            location.reload(); // Reload the page
         });
     </script>
 </body>
