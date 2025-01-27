@@ -2,21 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gül Yağmuru</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cute Weather Animation</title>
     <style>
         body {
+            font-family: 'Arial', sans-serif;
             margin: 0;
-            background-color: black;
+            min-height: 100vh;
             overflow: hidden;
-            font-family: 'Menlo', monospace;
-            padding-top: 60px;
         }
 
-        .content {
+        .weather-container {
+            width: 100vw;
+            height: 100vh;
+            transition: background-color 1s ease;
+            position: relative;
+        }
+
+        .weather {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: calc(100vh - 60px);
+            justify-content: center;
+        }
+
+        .weather.active {
+            opacity: 1;
+        }
+
+        /* --- Sunny Weather --- */
+        .sunny {
+            background-color: #8dccff;
+        }
+
+        .sun {
+            width: 15vmin;
+            height: 15vmin;
+            background-color: #f5e02a;
+            border-radius: 50%;
+            box-shadow: 0 0 5vmin #ffeb3b;
+            animation: sun-pulse 2s infinite alternate;
+        }
+
+        @keyframes sun-pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); } /* Increased pulse effect */
+        }
+
+
+        /* --- Snow Weather --- */
+        .snow {
+            background-color: #eceff1;
+        }
+
+        .mountain-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            border-bottom: 25vmin solid #cfd8dc;
+            border-left: 25vmin solid transparent;
+            border-right: 25vmin solid transparent;
+            animation: mountain-slide-in 1s ease-out forwards;
+            transform: translateY(100%);
+        }
+        .mountain.mountain1 { left: -10vmin; border-bottom-color: #b0bec5; animation-delay: 0.2s; }
+        .mountain.mountain2 { right: -10vmin; border-bottom-color: #90a4ae; animation-delay: 0.4s; }
+
+        @keyframes mountain-slide-in {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .snowflake {
+            position: absolute;
+            width: 1vmin;
+            height: 1vmin;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: snowfall 6s linear infinite;
+            top: -1vmin; /* Start from above the top */
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(-2vmin) translateX(var(--snowflake-start-x, 0)); opacity: 0; } /* Start higher and fade in */
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(calc(100vh + 10vmin)) translateX(var(--snowflake-end-x, 0)); opacity: 0; } /* Fall further and fade out */
+        }
+
+        /* --- Rain Weather --- */
+        .rain {
+            background-color: #b0bec5;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 0.5vmin;
+            height: 3vmin;
+            background-color: #90caf9;
+            border-radius: 0 0 5px 5px;
+            opacity: 0.8;
+            animation: rainfall 1s linear infinite;
+            top: -3vmin; /* Start from above the top */
+        }
+
+        @keyframes rainfall {
+            0% { transform: translateY(-5vmin) translateX(var(--raindrop-start-x, 0)); opacity: 0; } /* Start higher and fade in */
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(calc(100vh + 10vmin)) translateX(var(--raindrop-end-x, 0)); opacity: 0; } /* Fall further and fade out */
+        }
+
+        /* --- Yeni Buton Stilleri --- */
+        .controls {
+            position: fixed;
+            bottom: 5vmin;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2vmin;
+            z-index: 1000;
+        }
+
+        .controls button {
+            padding: 2vmin 4vmin;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            color: rgb(0, 0, 0);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 2vmin;
+            display: flex;
+            align-items: center;
+            gap: 1vmin;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .controls button::before {
+            content: '';
+            display: inline-block;
+            width: 3vmin;
+            height: 3vmin;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .controls button[data-weather="sunny"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>');
+        }
+
+        .controls button[data-weather="snow"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M12 18c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm3-6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 12c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm3-6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM3 0h18v24H3zM12 18c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm3-6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-3 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm3 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 12c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm12 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-3 6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/></svg>');
+        }
+
+        .controls button[data-weather="rain"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M14 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm6-6h-4v2h4c1.1 0 2 .9 2 2s-.9 2-2 2h-4v2h4c2.2 0 4-1.8 4-4s-1.8-4-4-4zm-8 2H8c-1.1 0-2 .9-2 2s.9 2 2 2h2v-2H8V8h2V6H8C5.8 6 4 7.8 4 10s1.8 4 4 4h2v-2H8c-1.1 0-2-.9-2-2s.9-2 2-2h2V8H8v2h2v2z"/></svg>');
         }
 
         .nav-menu {
@@ -48,66 +212,7 @@
             position: relative;
             overflow: hidden;
         }
-
-        #makeItBtn {
-            padding: 20px 40px;
-            font-size: 24px;
-            cursor: pointer;
-            background: linear-gradient(to right, #f98dad, #ff88f0);
-            color: #fff;
-            font-family: 'Cursive', sans-serif;
-            letter-spacing: 1px;
-            border: none;
-            border-radius: 10px;
-            transition: transform 0.3s;
-            position: relative;
-            z-index: 1;
-        }
-
-        #makeItBtn:hover {
-            transform: scale(1.1) rotate(2deg);
-            box-shadow: 0 0 15px rgba(249, 141, 173, 0.6);
-        }
-
-        #repeatBtn {
-            padding: 20px 40px;
-            font-size: 24px;
-            cursor: pointer;
-            background: linear-gradient(to right, #f9a1bd, #fda8f8);
-            color: white;
-            font-family: 'Cursive', sans-serif;
-            letter-spacing: 1px;
-            border: none;
-            border-radius: 10px;
-            transition: transform 0.3s;
-            position: relative;
-            z-index: 1;
-            display: none; /* Initially hidden */
-        }
-
-        #repeatBtn:hover {
-            transform: scale(1.1) rotate(-2deg);
-            box-shadow: 0 0 15px rgba(249, 161, 189, 0.6);
-        }
-
-        .petal {
-            position: absolute;
-            top: -50px;
-            font-size: 30px;
-            color: #ff3366;
-            user-select: none;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            to {
-                top: 100%;
-                transform: rotate(720deg);
-            }
-        }
     </style>
-</head>
-<body>
     <nav class="nav-menu">
         <div class="nav-links">
             <a href="index.html" class="nav-link">MATRIX</a>
@@ -115,52 +220,91 @@
             <a href="hava.html" class="nav-link">WEATHER</a>
         </div>
     </nav>
-    <div class="content">
-        <button id="makeItBtn">Make it</button>
-        <button id="repeatBtn">Repeat</button>
+</head>
+<body>
+
+    <div class="weather-container">
+        <div class="weather sunny active">
+            <div class="sun"></div>
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+        </div>
+
+        <div class="weather snow">
+            <div class="mountain-container">
+                <div class="mountain mountain1"></div>
+                <div class="mountain mountain2"></div>
+            </div>
+        </div>
+
+        <div class="weather rain"></div>
+    </div>
+
+    <div class="controls">
+        <button data-weather="sunny">Güneşli</button>
+        <button data-weather="snow">Kar</button>
+        <button data-weather="rain">Yağmur</button>
     </div>
 
     <script>
-        const btn = document.getElementById('makeItBtn');
-        const repeatBtn = document.getElementById('repeatBtn');
-        let isRaining = false;
-        let interval;
+        const weatherContainer = document.querySelector('.weather-container');
+        const weatherElements = document.querySelectorAll('.weather');
+        const buttons = document.querySelectorAll('.controls button');
 
-        function createPetal() {
-            const petal = document.createElement('div');
-            petal.innerHTML = '🌹';
-            petal.classList.add('petal');
-            
-            // Random position
-            petal.style.left = Math.random() * window.innerWidth + 'px';
-            
-            // Random animation duration (2-5 seconds)
-            const duration = Math.random() * 3 + 2;
-            petal.style.animationDuration = duration + 's';
-            
-            document.body.appendChild(petal);
-            
-            // Remove element after animation
-            setTimeout(() => {
-                petal.remove();
-            }, duration * 1000);
+        function setWeather(weatherType) {
+            weatherElements.forEach(weather => weather.classList.remove('active'));
+            document.querySelector(`.weather.${weatherType}`).classList.add('active');
+
+            // Remove all existing animations
+            document.querySelectorAll('.snowflake, .raindrop').forEach(el => el.remove());
+
+            if (weatherType === 'snow') {
+                const snowWeatherDiv = document.querySelector('.weather.snow');
+                snowWeatherDiv.innerHTML = `<div class="mountain-container">
+                                                <div class="mountain mountain1"></div>
+                                                <div class="mountain mountain2"></div>
+                                            </div>`;
+
+                for (let i = 0; i < 150; i++) {
+                    const snowflake = document.createElement('div');
+                    snowflake.classList.add('snowflake');
+                    snowflake.style.left = `${Math.random() * 100}%`;
+                    snowflake.style.animationDelay = `${Math.random() * 5}s`;
+                    snowflake.style.animationDuration = `${Math.random() * 3 + 4}s`;
+                    snowflake.style.setProperty('--snowflake-start-x', `${Math.random() * 100 - 50}px`);
+                    snowflake.style.setProperty('--snowflake-end-x', `${Math.random() * 100 - 50}px`);
+                    snowWeatherDiv.appendChild(snowflake);
+                }
+            } else if (weatherType === 'rain') {
+                const rainWeatherDiv = document.querySelector('.weather.rain');
+                for (let i = 0; i < 200; i++) {
+                    const raindrop = document.createElement('div');
+                    raindrop.classList.add('raindrop');
+                    raindrop.style.left = `${Math.random() * 100}%`;
+                    raindrop.style.animationDelay = `${Math.random() * 1}s`;
+                    raindrop.style.animationDuration = `${Math.random() * 1 + 0.8}s`;
+                    raindrop.style.setProperty('--raindrop-start-x', `${Math.random() * 80 - 40}px`);
+                    raindrop.style.setProperty('--raindrop-end-x', `${Math.random() * 80 - 40}px`);
+                    rainWeatherDiv.appendChild(raindrop);
+                }
+            } else if (weatherType === 'sunny') {
+                const sunnyWeatherDiv = document.querySelector('.weather.sunny');
+                sunnyWeatherDiv.innerHTML = `<div class="sun"></div>
+                                             <div class="cloud cloud1"></div>
+                                             <div class="cloud cloud2"></div>`;
+            }
         }
 
-        btn.addEventListener('click', () => {
-            if (!isRaining) {
-                isRaining = true;
-                interval = setInterval(createPetal, 200); // New petal every 200ms
-                btn.style.display = 'none';
-                setTimeout(() => {
-                    clearInterval(interval);
-                    repeatBtn.style.display = 'block';
-                }, 10000); // Stop creating new petals after 10 seconds
-            }
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                buttons.forEach(btn => btn.style.background = 'rgba(255, 255, 255, 0.2)');
+                this.style.background = 'rgba(255, 255, 255, 0.4)';
+                setWeather(this.dataset.weather);
+            });
         });
 
-        repeatBtn.addEventListener('click', () => {
-            location.reload(); // Reload the page
-        });
+        setWeather('sunny');
     </script>
+
 </body>
 </html>
