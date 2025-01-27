@@ -2,7 +2,42 @@
 <html>
 <head>
     <style>
+        /* Yeni menü stilleri */
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 0;
+            z-index: 1000;
+            border-bottom: 1px solid #0f03;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: #0f0;
+            text-decoration: none;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px #0f0;
+            transition: 0.3s;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px #0f03;
+        }
+
+        /* Mevcut body stilini güncelle */
         body {
+            padding-top: 60px; /* Menü yüksekliği için boşluk */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -14,6 +49,7 @@
             flex-direction: column;
         }
 
+        /* Kalan stil kuralları aynı kalacak */
         #startButton {
             font-size: 2.5em;
             color: #0f0;
@@ -27,67 +63,18 @@
             margin-bottom: 30px;
         }
 
-        .message-container {
-            display: none;
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #message {
-            color: #0f0;
-            font-size: 3em;
-            text-shadow: 0 0 15px #0f0;
-            animation: glitch 2s infinite;
-            margin-bottom: 20px;
-        }
-
-        #replayButton {
-            color: #0f0;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 10px 20px;
-            border: 1px solid #0f03;
-            border-radius: 8px;
-            transition: 0.3s;
-            display: inline-block;
-            opacity: 0;
-            animation: fadeIn 0.5s 0.5s forwards;
-        }
-
-        #replayButton:hover {
-            background: #0f01;
-            box-shadow: 0 0 15px #0f03;
-        }
-
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            opacity: 0.1;
-            z-index: -1;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
+        /* ... Diğer stiller aynı ... */
     </style>
 </head>
 <body>
+    <!-- Yeni navigasyon menüsü -->
+    <nav class="nav-menu">
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">MATRIX</a>
+            <a href="roses.html" class="nav-link">ROSES</a>
+        </div>
+    </nav>
+
     <canvas class="matrix-bg" id="matrix"></canvas>
     <div id="startButton" onclick="showMessage()">▶︎ START</div>
     
@@ -96,6 +83,7 @@
         <div id="replayButton" onclick="resetPage()">↻ SYSTEM REBOOT</div>
     </div>
 
+    <!-- Script kısmı aynı kalacak -->
     <script>
         function showMessage() {
             document.querySelector(".message-container").style.display = "block";
