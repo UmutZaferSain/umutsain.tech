@@ -52,12 +52,18 @@
             background-color: #f5e02a;
             border-radius: 50%;
             box-shadow: 0 0 5vmin #ffeb3b;
-            animation: sun-pulse 2s infinite alternate;
-            cursor: move;
+            /* animation: sun-pulse 2s infinite alternate;  Removed sun-pulse animation */
+            cursor: grab;
             touch-action: none;
+            position: relative;
+            z-index: 10;
         }
 
-        @keyframes sun-pulse {
+        .sun:active {
+            cursor: grabbing;
+        }
+
+        @keyframes sun-pulse { /* Keeping the keyframes in case you want to re-enable later */
             0% { transform: scale(1); }
             100% { transform: scale(1.15); }
         }
@@ -271,6 +277,7 @@
         document.addEventListener('touchstart', dragStart);
         document.addEventListener('touchend', dragEnd);
         document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseleave', dragEnd);
 
         function dragStart(e) {
             if (e.target.classList.contains('sun')) {
@@ -282,24 +289,28 @@
         }
 
         function dragEnd() {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
+            if (sunElement) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                sunElement.style.cursor = 'grab';
+            }
         }
 
         function drag(e) {
             if (isDragging && sunElement) {
                 e.preventDefault();
+                sunElement.style.cursor = 'grabbing';
                 currentX = (e.clientX || e.touches[0].clientX) - initialX;
                 currentY = (e.clientY || e.touches[0].clientY) - initialY;
                 xOffset = currentX;
                 yOffset = currentY;
-                
+
                 const maxX = window.innerWidth/2 - 75;
                 const maxY = window.innerHeight/2 - 75;
                 xOffset = Math.max(-maxX, Math.min(xOffset, maxX));
                 yOffset = Math.max(-maxY, Math.min(yOffset, maxY));
-                
+
                 sunElement.style.transform = `translate(${xOffset}px, ${yOffset}px) scale(1.15)`;
             }
         }
@@ -312,6 +323,9 @@
             document.querySelector('.cursor-circle').style.left = `${e.clientX}px`;
             document.querySelector('.cursor-circle').style.top = `${e.clientY}px`;
         });
+        document.addEventListener('mouseout', () => {
+            document.querySelector('.cursor-circle').style.display = 'none';
+        });
 
         // Weather Interactions
         function updateSnowflakes() {
@@ -322,7 +336,7 @@
                 const dx = x - mouseX;
                 const dy = y - mouseY;
                 const distance = Math.sqrt(dx*dx + dy*dy);
-                
+
                 if (distance < snowPushRadius) {
                     const angle = Math.atan2(dy, dx);
                     const force = (snowPushRadius - distance) * snowPushForce;
@@ -341,13 +355,13 @@
                 const dx = x - mouseX;
                 const dy = y - mouseY;
                 const distance = Math.sqrt(dx*dx + dy*dy);
-                
+
                 if (distance < umbrellaRadius) {
                     const angle = Math.atan2(dy, dx);
                     const currentX = parseFloat(raindrop.style.getPropertyValue('--raindrop-end-x') || 0);
                     raindrop.style.setProperty('--raindrop-end-x', `${currentX + Math.cos(angle) * 30}px`);
                     raindrop.style.animationDuration = '0.5s';
-                    
+
                     if(Math.random() < 0.3) {
                         const splash = document.createElement('div');
                         splash.classList.add('splash');
@@ -370,6 +384,7 @@
             weatherElements.forEach(weather => weather.classList.remove('active'));
             const activeWeather = document.querySelector(`.weather.${weatherType}`);
             activeWeather.classList.add('active');
+            weatherContainer.className = `weather-container ${weatherType}`;
 
             document.querySelectorAll('.snowflake, .raindrop').forEach(el => el.remove());
 
@@ -378,7 +393,7 @@
                     <div class="mountain mountain1"></div>
                     <div class="mountain mountain2"></div>
                 </div>`;
-                
+
                 for (let i = 0; i < 300; i++) {
                     const snowflake = document.createElement('div');
                     snowflake.classList.add('snowflake');
@@ -404,6 +419,12 @@
                 updateRaindrops();
             } else if (weatherType === 'sunny') {
                 activeWeather.innerHTML = `<div class="sun"></div>`;
+                sunElement = activeWeather.querySelector('.sun');
+                xOffset = 0;
+                yOffset = 0;
+                if (sunElement) {
+                    sunElement.style.transform = `translate(${xOffset}px, ${yOffset}px) scale(1.15)`;
+                }
             }
         }
 
