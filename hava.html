@@ -52,7 +52,6 @@
             background-color: #f5e02a;
             border-radius: 50%;
             box-shadow: 0 0 5vmin #ffeb3b;
-            /* animation: sun-pulse 2s infinite alternate;  Removed sun-pulse animation */
             cursor: grab;
             touch-action: none;
             position: relative;
@@ -61,11 +60,6 @@
 
         .sun:active {
             cursor: grabbing;
-        }
-
-        @keyframes sun-pulse { /* Keeping the keyframes in case you want to re-enable later */
-            0% { transform: scale(1); }
-            100% { transform: scale(1.15); }
         }
 
         /* --- Snow Weather --- */
@@ -265,6 +259,7 @@
     <script>
         let isDragging = false;
         let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+        let startOffsetX = 0, startOffsetY = 0; // Store starting offset
         let sunElement = null;
         let mouseX = 0, mouseY = 0;
         const snowPushRadius = 150, snowPushForce = 0.1;
@@ -285,6 +280,22 @@
                 initialY = e.clientY || e.touches[0].clientY;
                 sunElement = e.target;
                 isDragging = true;
+
+                // Get current sun position if already translated
+                const transformValue = sunElement.style.transform;
+                if (transformValue && transformValue.startsWith('translate')) {
+                    const translateValues = transformValue.match(/translate\((-?\d+)px, (-?\d+)px\)/);
+                    if (translateValues) {
+                        startOffsetX = parseInt(translateValues[1]) || 0;
+                        startOffsetY = parseInt(translateValues[2]) || 0;
+                    } else {
+                        startOffsetX = 0;
+                        startOffsetY = 0;
+                    }
+                } else {
+                    startOffsetX = 0;
+                    startOffsetY = 0;
+                }
             }
         }
 
@@ -303,8 +314,9 @@
                 sunElement.style.cursor = 'grabbing';
                 currentX = (e.clientX || e.touches[0].clientX) - initialX;
                 currentY = (e.clientY || e.touches[0].clientY) - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
+
+                xOffset = startOffsetX + currentX; // Add to starting offset
+                yOffset = startOffsetY + currentY; // Add to starting offset
 
                 const maxX = window.innerWidth/2 - 75;
                 const maxY = window.innerHeight/2 - 75;
@@ -422,6 +434,8 @@
                 sunElement = activeWeather.querySelector('.sun');
                 xOffset = 0;
                 yOffset = 0;
+                startOffsetX = 0; // Reset start offset too
+                startOffsetY = 0;
                 if (sunElement) {
                     sunElement.style.transform = `translate(${xOffset}px, ${yOffset}px) scale(1.15)`;
                 }
