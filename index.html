@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <title>Matrix Terminal</title>
     <style>
-        /* Yeni Responsive Menü Stilleri */
+        /* MENÜ STİLLERİ */
         .nav-menu {
             position: fixed;
             top: 0;
@@ -40,12 +42,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(0, 255, 0, 0.2),
-                transparent
-            );
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
             transition: 0.5s;
         }
 
@@ -53,7 +50,7 @@
             left: 100%;
         }
 
-        /* Ana İçerik Düzeni */
+        /* ANA İÇERİK STİLLERİ */
         body {
             margin: 0;
             background-color: #000;
@@ -61,7 +58,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 60px; /* Menü yüksekliği */
+            padding-top: 60px;
         }
 
         #startButton {
@@ -74,7 +71,7 @@
             padding: 15px 30px;
             border-radius: 12px;
             border: 1px solid #0f03;
-            margin: auto; /* Dikeyde ortalamak için */
+            margin: auto;
             background: rgba(0, 0, 0, 0.8);
             position: relative;
             z-index: 100;
@@ -90,19 +87,6 @@
             z-index: 1000;
         }
 
-        /* Matrix Canvas Ayarları */
-        .matrix-bg {
-            position: fixed;
-            top: 60px; /* Menü altından başla */
-            left: 0;
-            width: 100%;
-            height: calc(100% - 60px); /* Menü yüksekliğini çıkar */
-            pointer-events: none;
-            opacity: 0.1;
-            z-index: 0;
-        }
-
-        /* Diğer Stiller */
         #message {
             color: #0f0;
             font-size: 3em;
@@ -126,6 +110,17 @@
             opacity: 0;
             animation: fadeIn 0.5s 0.5s forwards;
             background: rgba(0, 0, 0, 0.8);
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 60px);
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 0;
         }
 
         @keyframes glitch {
@@ -169,13 +164,13 @@
             document.querySelector(".message-container").style.display = "none";
         }
 
-        // Matrix Background Responsive Düzen
+        // Matrix Background
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 60; // Menü yüksekliğini çıkar
+            canvas.height = window.innerHeight - 60;
         }
 
         window.addEventListener('resize', resizeCanvas);
