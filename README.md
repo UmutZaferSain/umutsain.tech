@@ -2,6 +2,8 @@
 
 Static Next.js site for umutsain.tech. The project uses `next export` with Tailwind and React Three Fiber for the hero scene.
 
+Live site: https://umutsain.tech
+
 ## Scripts
 - `npm run dev` – start dev server
 - `npm run build` – static export to `out/`
